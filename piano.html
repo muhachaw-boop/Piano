@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HTML5 Piano Full Version</title>
+<style>
+body{
+  margin:0;
+  background:#000;
+  color:#fff;
+  font-family:Arial, sans-serif;
+  text-align:center;
+  user-select:none;
+}
+#piano{
+  position:relative;
+  width:1050px;
+  height:260px;
+  margin:30px auto;
+}
+.white{
+  position:relative;
+  display:inline-block;
+  width:60px;
+  height:260px;
+  background:#fff;
+  border:1px solid #000;
+  box-sizing:border-box;
+}
+.white.active{background:#ddd;}
+.black{
+  position:absolute;
+  width:40px;
+  height:160px;
+  background:#000;
+  top:0;
+  z-index:2;
+}
+.black.active{background:#444;}
+</style>
+</head>
+<body>
+
+<h1>HTML5 Piano</h1>
+<p>Keyboard: Z S X D C V G B H N J M , | Q 2 W 3 E R 5 T 6 Y 7 U</p>
+
+<div id="piano"></div>
+
+<script>
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const ctx = new AudioContext();
+
+function note(freq){
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = "triangle";
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(0.001, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.start();
+  o.stop(ctx.currentTime + 1.2);
+}
+
+const piano = document.getElementById("piano");
+
+const notes = [
+  130.81,146.83,164.81,174.61,196.00,220.00,246.94,
+  261.63,293.66,329.63,349.23,392.00,440.00,493.88,
+  523.25,587.33,659.25,698.46,783.99,880.00,987.77
+];
+
+const blackMap = {
+  0:138.59,1:155.56,3:185.00,4:207.65,5:233.08,
+  7:277.18,8:311.13,10:369.99,11:415.30,12:466.16,
+  14:554.37,15:622.25,17:739.99,18:830.61,19:932.33
+};
+
+notes.forEach((f,i)=>{
+  const w=document.createElement("div");
+  w.className="white";
+  w.onmousedown=()=>{note(f);w.classList.add("active")};
+  w.onmouseup=()=>w.classList.remove("active");
+  w.onmouseleave=()=>w.classList.remove("active");
+  piano.appendChild(w);
+
+  if(blackMap[i]){
+    const b=document.createElement("div");
+    b.className="black";
+    b.style.left=(i*60+40)+"px";
+    b.onmousedown=()=>{note(blackMap[i]);b.classList.add("active")};
+    b.onmouseup=()=>b.classList.remove("active");
+    b.onmouseleave=()=>b.classList.remove("active");
+    piano.appendChild(b);
+  }
+});
+
+const keys={
+  z:130.81,s:138.59,x:146.83,d:155.56,c:164.81,
+  v:174.61,g:185.00,b:196.00,h:207.65,n:220.00,
+  j:233.08,m:246.94,",":261.63,
+  q:261.63,"2":277.18,w:293.66,"3":311.13,e:329.63,
+  r:349.23,"5":369.99,t:392.00,"6":415.30,y:440.00,
+  "7":466.16,u:493.88
+};
+
+document.addEventListener("keydown",e=>{
+  if(keys[e.key]) note(keys[e.key]);
+});
+</script>
+
+</body>
+</html>
